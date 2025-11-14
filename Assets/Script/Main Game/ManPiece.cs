@@ -13,7 +13,7 @@ public class ManPiece : CheckersPiece
         (listMove, listAttack) = Movement.GenerateMoves(this, ref movementPattern, ref listPiece);
     }
 
-    public void Promote(ref CheckersPiece[,] listPiece)
+    public void Promote(ref CheckersPiece[,] listPiece, ref CheckersPiece selectedPiece)
     {
         int promoteArea = team == Team.Cake ? GameManager.instance.col - 1 : 0;
         if (y != promoteArea)
@@ -21,7 +21,7 @@ public class ManPiece : CheckersPiece
             return;
         }
         ChangeMesh();
-        ChangeComponent(ref listPiece);
+        ChangeComponent(ref listPiece, ref selectedPiece);
     }
 
     private void ChangeMesh()
@@ -40,7 +40,7 @@ public class ManPiece : CheckersPiece
 
     }
 
-    private void ChangeComponent(ref CheckersPiece[,] listPiece)
+    private void ChangeComponent(ref CheckersPiece[,] listPiece, ref CheckersPiece selectedPiece)
     {
         KingPiece king = gameObject.AddComponent<KingPiece>();
         king.x = x;
@@ -50,6 +50,7 @@ public class ManPiece : CheckersPiece
         king.pieceType = PieceType.King;
         Destroy(GetComponent<ManPiece>());
         listPiece[king.x, king.y] = king;
+        selectedPiece = king;
     }
 
 

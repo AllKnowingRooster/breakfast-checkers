@@ -4,10 +4,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class CanvasGroup : MonoBehaviour
+public class MainMenuCanvasManager : MonoBehaviour
 {
 
-    public static CanvasGroup instance { get; private set; }
+    public static MainMenuCanvasManager instance { get; private set; }
     private UIState currentState;
     [Header("Start Menu")]
     [SerializeField] private Animator startMenuAnimator;

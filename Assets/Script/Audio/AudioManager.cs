@@ -25,7 +25,7 @@ public class AudioManager : MonoBehaviour, IObserver
             return;
         }
         instance = this;
-        DontDestroyOnLoad(gameObject);
+        DontDestroyOnLoad(instance);
         sfxMap = new Dictionary<UserAction, AudioData>();
         UserAction[] listAction = (UserAction[])Enum.GetValues(typeof(UserAction));
         for (int i = 0; i < listAction.Length; i++)

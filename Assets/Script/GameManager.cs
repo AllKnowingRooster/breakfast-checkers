@@ -44,6 +44,9 @@ public class GameManager : MonoBehaviour, ISubject
     [SerializeField] public Team whoTurn;
     [SerializeField] public int cakePieceCount;
     [SerializeField] public int burgerPieceCount;
+    private float roundCountDown;
+    public bool isRoundStart;
+
 
     public void AddObserver(IObserver observer)
     {
@@ -73,7 +76,6 @@ public class GameManager : MonoBehaviour, ISubject
         instance = this;
         DontDestroyOnLoad(instance);
         listObserver = new List<IObserver>();
-        isGameOver = false;
         SceneManager.sceneLoaded += SceneLoadLogic;
 
     }
@@ -82,6 +84,7 @@ public class GameManager : MonoBehaviour, ISubject
     {
         if (scene.buildIndex == 1)
         {
+            ResetGameData();
             StartCoroutine(GameLoop());
         }
     }
@@ -103,16 +106,61 @@ public class GameManager : MonoBehaviour, ISubject
         whoTurn = Team.Cake;
         winner = Team.None;
         BoardGenerator.GenerateBoard(row, col);
-        yield return null;
+        MainGameCanvasManager.instance.UpdateScoreText(Team.Cake);
+        MainGameCanvasManager.instance.UpdateScoreText(Team.Burger);
+        yield return MainGameCanvasManager.instance.RoundStartCountDown(roundCountDown);
+        isRoundStart = true;
     }
 
     private IEnumerator Playing()
     {
-        yield return null;
+        while (!isGameOver)
+        {
+            yield return null;
+        }
     }
 
     private IEnumerator EndGame()
     {
-        yield return null;
+        isRoundStart = false;
+        MainGameCanvasManager.instance.ToggleBlackScreen();
+        MainGameCanvasManager.instance.checkBoardButton.gameObject.SetActive(true);
+        MainGameCanvasManager.instance.headerContainer.SetActive(false);
+        MainGameCanvasManager.instance.UpdateWinnerText();
+        yield return MainGameCanvasManager.instance.resultUIState.PlayEnterAnimation();
+    }
+
+    public void SubtractPieceCount(CheckersPiece piece)
+    {
+        if (piece.team == Team.Cake)
+        {
+            cakePieceCount--;
+        }
+        else if (piece.team == Team.Burger)
+        {
+            burgerPieceCount--;
+        }
+
+    }
+
+    public void IncreasePieceCount(CheckersPiece piece)
+    {
+        if (piece.team == Team.Cake)
+        {
+            cakePieceCount++;
+        }
+        else if (piece.team == Team.Burger)
+        {
+            burgerPieceCount++;
+        }
+    }
+
+    private void ResetGameData()
+    {
+        isGameOver = false;
+        cakePieceCount = 0;
+        burgerPieceCount = 0;
+        roundCountDown = 3.0f;
+        isRoundStart = false;
     }
 }

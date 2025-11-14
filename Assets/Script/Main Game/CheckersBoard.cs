@@ -16,7 +16,7 @@ public class CheckersBoard : MonoBehaviour
     private List<CheckersPiece> burgerDeadzone;
     private List<CheckersPiece> cakeDeadzone;
     private float deadStackoffset;
-    private List<CheckersPiece> togglePiece;
+    private List<CheckersPiece> togglePieces;
     private bool moveAgain = false;
     private void Awake()
     {
@@ -30,11 +30,11 @@ public class CheckersBoard : MonoBehaviour
         burgerDeadzone = new List<CheckersPiece>();
         cakeDeadzone = new List<CheckersPiece>();
         deadStackoffset = 0.7f;
-        togglePiece = new List<CheckersPiece>();
+        togglePieces = new List<CheckersPiece>();
     }
     private void Update()
     {
-        if (GameManager.instance.isGameOver)
+        if (GameManager.instance.isGameOver || !GameManager.instance.isRoundStart)
         {
             return;
         }
@@ -101,7 +101,7 @@ public class CheckersBoard : MonoBehaviour
     {
         PutPiece();
         ToggleAvailablePiece();
-        togglePiece.Clear();
+        togglePieces.Clear();
         GameManager.instance.whoTurn = GameManager.instance.whoTurn == Team.Burger ? Team.Cake : Team.Burger;
         GetAllTogglablePiece();
     }
@@ -146,7 +146,7 @@ public class CheckersBoard : MonoBehaviour
         AfterMove(pos);
         if (selectedPiece.pieceType == PieceType.Men)
         {
-            selectedPiece.GetComponent<ManPiece>().Promote(ref listPiece);
+            selectedPiece.GetComponent<ManPiece>().Promote(ref listPiece, ref selectedPiece);
         }
 
         HideHighlight();
@@ -159,8 +159,8 @@ public class CheckersBoard : MonoBehaviour
             if (CanMoveAgain())
             {
                 ToggleAvailablePiece();
-                togglePiece.Clear();
-                togglePiece.Add(selectedPiece);
+                togglePieces.Clear();
+                togglePieces.Add(selectedPiece);
                 selectedPiece.ToggleIndicator();
                 selectedPiece = null;
                 moveAgain = true;
@@ -187,13 +187,13 @@ public class CheckersBoard : MonoBehaviour
         {
             GameManager.instance.isGameOver = true;
             GameManager.instance.winner = GameManager.instance.whoTurn == Team.Cake ? Team.Cake : Team.Burger;
-            Debug.Log("Game Over");
         }
     }
 
     private bool CanMoveAgain()
     {
         selectedPiece.GetPossibleMoves(ref listPiece);
+
         if (selectedPiece.listAttack.Count > 0)
         {
             return true;
@@ -225,23 +225,15 @@ public class CheckersBoard : MonoBehaviour
     }
     private void KillPiece(CheckersPiece piece, ref List<CheckersPiece> deadzone)
     {
-        Vector2Int deadPos = new Vector2Int(1 + (deadzone.Count / 2), piece.team == Team.Cake ? -1 : 8);
+        Vector2Int deadPos = new Vector2Int(piece.team == Team.Cake ? -1 : 8, 1 + (deadzone.Count / 2));
         Vector3 vector3DeadPos = new Vector3(deadPos.x, (deadStackoffset * ((deadzone.Count % 2) + 1)), deadPos.y);
         deadzone.Add(piece);
         piece.SetPosition(vector3DeadPos, false);
         listPiece[piece.x, piece.y] = null;
         piece.x = deadPos.x;
         piece.y = deadPos.y;
-
-        if (piece.team == Team.Cake)
-        {
-            GameManager.instance.cakePieceCount--;
-        }
-        else if (piece.team == Team.Burger)
-        {
-            GameManager.instance.burgerPieceCount--;
-        }
-
+        GameManager.instance.SubtractPieceCount(piece);
+        MainGameCanvasManager.instance.UpdateScoreText(piece.team);
     }
 
     private void ShowHighlight()
@@ -315,26 +307,31 @@ public class CheckersBoard : MonoBehaviour
                     {
                         if (!hasPieceCanAttack)
                         {
-                            togglePiece.Clear();
+                            togglePieces.Clear();
                             hasPieceCanAttack = true;
                         }
-                        togglePiece.Add(listPiece[i, j]);
+                        togglePieces.Add(listPiece[i, j]);
                     }
                     else if (listPiece[i, j].listMove.Count > 0 && !hasPieceCanAttack)
                     {
-                        togglePiece.Add(listPiece[i, j]);
+                        togglePieces.Add(listPiece[i, j]);
                     }
                 }
             }
+        }
+        if (togglePieces.Count == 0)
+        {
+            GameManager.instance.isGameOver = true;
+            GameManager.instance.winner = GameManager.instance.whoTurn == Team.Cake ? Team.Burger : Team.Cake;
         }
         ToggleAvailablePiece();
     }
 
     private void ToggleAvailablePiece()
     {
-        for (int i = 0; i < togglePiece.Count; i++)
+        for (int i = 0; i < togglePieces.Count; i++)
         {
-            togglePiece[i].ToggleIndicator();
+            togglePieces[i].ToggleIndicator();
         }
     }
 

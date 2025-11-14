@@ -99,14 +99,7 @@ public static class BoardGenerator
         piece.pieceType = PieceType.Men;
         piece.SetPosition(positionOnBoard, true);
         listPiece[x, y] = piece;
-        if (team == Team.Cake)
-        {
-            GameManager.instance.cakePieceCount++;
-        }
-        else if (team == Team.Burger)
-        {
-            GameManager.instance.burgerPieceCount++;
-        }
+        GameManager.instance.IncreasePieceCount(piece);
     }
 
     public static void GenerateBoard(int row, int col)

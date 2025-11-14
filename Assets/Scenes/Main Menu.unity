@@ -329,6 +329,7 @@ MonoBehaviour:
   whoTurn: 0
   cakePieceCount: 0
   burgerPieceCount: 0
+  isRoundStart: 0
 --- !u!4 &56413251
 Transform:
   m_ObjectHideFlags: 0
@@ -2770,6 +2771,7 @@ GameObject:
   - component: {fileID: 992729390}
   - component: {fileID: 992729389}
   - component: {fileID: 992729388}
+  - component: {fileID: 992729392}
   m_Layer: 5
   m_Name: Settings Menu Canvas
   m_TagString: Untagged
@@ -2882,6 +2884,18 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!225 &992729392
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 992729386}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1056792357
 GameObject:
   m_ObjectHideFlags: 0
@@ -4427,6 +4441,7 @@ GameObject:
   - component: {fileID: 1754354634}
   - component: {fileID: 1754354633}
   - component: {fileID: 1754354636}
+  - component: {fileID: 1754354637}
   m_Layer: 5
   m_Name: Start Menu Canvas
   m_TagString: Untagged
@@ -4539,6 +4554,18 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!225 &1754354637
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1754354631}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1757687274
 GameObject:
   m_ObjectHideFlags: 0
