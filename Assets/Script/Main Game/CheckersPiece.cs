@@ -3,12 +3,17 @@ using UnityEngine;
 
 public class CheckersPiece : MonoBehaviour
 {
+
+
     public Team team;
     public int x;
     public int y;
     public PieceType pieceType;
     public Vector3 desiredPos;
+    public bool canMove = false;
     private float speed = 4.0f;
+    public List<Vector2Int> listMove = new List<Vector2Int>();
+    public List<Vector2Int> listAttack = new List<Vector2Int>();
     private void Update()
     {
         if (transform.position == desiredPos)
@@ -33,9 +38,16 @@ public class CheckersPiece : MonoBehaviour
         desiredPos = pos;
     }
 
-    public virtual (List<Vector2Int>, List<Vector2Int>) GetPossibleMoves()
+    public virtual void GetPossibleMoves(ref CheckersPiece[,] listPiece)
     {
-        return (null, null);
+
+    }
+
+    public void ToggleIndicator()
+    {
+        Transform indicator = transform.Find("Indicator");
+        indicator.gameObject.SetActive(!indicator.gameObject.activeSelf);
+        canMove = !canMove;
     }
 
 }

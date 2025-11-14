@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -7,11 +8,16 @@ public class CheckersBoard : MonoBehaviour
     public GameObject[,] listCube;
     public CheckersPiece[,] listPiece;
     private CheckersPiece selectedPiece;
-    private Vector3 prevSelectedPiecePos;
+    private Vector2Int prevSelectedPiecePos;
     private Vector2Int noTarget;
     private Vector2Int currentPointer;
     private Vector2Int lastPointer;
     private Plane draggingPlane;
+    private List<CheckersPiece> burgerDeadzone;
+    private List<CheckersPiece> cakeDeadzone;
+    private float deadStackoffset;
+    private List<CheckersPiece> togglePiece;
+    private bool moveAgain = false;
     private void Awake()
     {
         cam = Camera.main;
@@ -21,10 +27,17 @@ public class CheckersBoard : MonoBehaviour
         lastPointer = noTarget;
         currentPointer = noTarget;
         draggingPlane = new Plane(Vector3.up, new Vector3(0, 1, 0));
+        burgerDeadzone = new List<CheckersPiece>();
+        cakeDeadzone = new List<CheckersPiece>();
+        deadStackoffset = 0.7f;
+        togglePiece = new List<CheckersPiece>();
     }
-
     private void Update()
     {
+        if (GameManager.instance.isGameOver)
+        {
+            return;
+        }
         RaycastHit hit;
         Vector2 mousePos = Mouse.current.position.ReadValue();
         Ray ray = cam.ScreenPointToRay(mousePos);
@@ -35,19 +48,20 @@ public class CheckersBoard : MonoBehaviour
             {
                 if (lastPointer == noTarget)
                 {
-                    listCube[currentPointer.x, currentPointer.y].layer = LayerMask.NameToLayer("HoverLayer");
+                    listCube[currentPointer.x, currentPointer.y].layer = ChangeLayer(currentPointer);
                     lastPointer = currentPointer;
                 }
                 else if (lastPointer != noTarget && lastPointer != currentPointer)
                 {
-                    listCube[lastPointer.x, lastPointer.y].layer = LayerMask.NameToLayer("CubeLayer");
-                    listCube[currentPointer.x, currentPointer.y].layer = LayerMask.NameToLayer("HoverLayer");
+                    listCube[lastPointer.x, lastPointer.y].layer = ChangeLayer(lastPointer);
+                    listCube[currentPointer.x, currentPointer.y].layer = ChangeLayer(currentPointer);
                     lastPointer = currentPointer;
                 }
-                else if (selectedPiece == null && Mouse.current.leftButton.wasPressedThisFrame && listPiece[currentPointer.x, currentPointer.y] != null)
+                else if (selectedPiece == null && Mouse.current.leftButton.wasPressedThisFrame && listPiece[currentPointer.x, currentPointer.y] != null && GameManager.instance.whoTurn == listPiece[currentPointer.x, currentPointer.y].team && listPiece[currentPointer.x, currentPointer.y].canMove)
                 {
                     selectedPiece = listPiece[currentPointer.x, currentPointer.y];
-                    prevSelectedPiecePos = new Vector3(selectedPiece.x, 0.5f, selectedPiece.y);
+                    prevSelectedPiecePos = new Vector2Int(selectedPiece.x, selectedPiece.y);
+                    ShowHighlight();
                 }
             }
             else if (currentPointer == noTarget)
@@ -71,22 +85,32 @@ public class CheckersBoard : MonoBehaviour
 
             if (Mouse.current.leftButton.wasReleasedThisFrame)
             {
-                if (isValidMove())
-                {
-                    Vector3 newPiecePos = new Vector3(currentPointer.x, 0.5f, currentPointer.y);
-                    selectedPiece.SetPosition(newPiecePos, false);
-                }
-                else
-                {
-                    ResetPosition();
-                }
-
-                selectedPiece = null;
-                prevSelectedPiecePos = Vector3.zero;
-
+                MovePiece(currentPointer);
             }
         }
 
+    }
+
+    private void PutPiece()
+    {
+        selectedPiece = null;
+        prevSelectedPiecePos = noTarget;
+    }
+
+    private void ChangeTurn()
+    {
+        PutPiece();
+        ToggleAvailablePiece();
+        togglePiece.Clear();
+        GameManager.instance.whoTurn = GameManager.instance.whoTurn == Team.Burger ? Team.Cake : Team.Burger;
+        GetAllTogglablePiece();
+    }
+    private void ResetPosition()
+    {
+        Vector3 piecePos = new Vector3(prevSelectedPiecePos.x, 0.5f, prevSelectedPiecePos.y);
+        selectedPiece.SetPosition(piecePos, false);
+        HideHighlight();
+        PutPiece();
     }
 
     private Vector2Int FindCube(Collider hitCollider)
@@ -104,17 +128,214 @@ public class CheckersBoard : MonoBehaviour
         return noTarget;
     }
 
-    private bool isValidMove()
+    private void MovePiece(Vector2Int pos)
     {
-        if (currentPointer == noTarget || listPiece[currentPointer.x, currentPointer.y] != null)
+        bool isAttacking = false;
+        if (!IsValidMove(pos))
+        {
+            ResetPosition();
+            return;
+        }
+
+        if (isPieceAttacking(pos))
+        {
+            CheckersPiece enemyPiece = FindEnemy(pos);
+            KillPiece(enemyPiece, ref (enemyPiece.team == Team.Cake ? ref cakeDeadzone : ref burgerDeadzone));
+            isAttacking = true;
+        }
+        AfterMove(pos);
+        if (selectedPiece.pieceType == PieceType.Men)
+        {
+            selectedPiece.GetComponent<ManPiece>().Promote(ref listPiece);
+        }
+
+        HideHighlight();
+        if (!isAttacking)
+        {
+            moveAgain = false;
+        }
+        else
+        {
+            if (CanMoveAgain())
+            {
+                ToggleAvailablePiece();
+                togglePiece.Clear();
+                togglePiece.Add(selectedPiece);
+                selectedPiece.ToggleIndicator();
+                selectedPiece = null;
+                moveAgain = true;
+            }
+            else
+            {
+                moveAgain = false;
+            }
+        }
+
+        if (!moveAgain)
+        {
+            CheckGameover();
+            if (!GameManager.instance.isGameOver)
+            {
+                ChangeTurn();
+            }
+        }
+    }
+
+    private void CheckGameover()
+    {
+        if (GameManager.instance.cakePieceCount == 0 || GameManager.instance.burgerPieceCount == 0)
+        {
+            GameManager.instance.isGameOver = true;
+            GameManager.instance.winner = GameManager.instance.whoTurn == Team.Cake ? Team.Cake : Team.Burger;
+            Debug.Log("Game Over");
+        }
+    }
+
+    private bool CanMoveAgain()
+    {
+        selectedPiece.GetPossibleMoves(ref listPiece);
+        if (selectedPiece.listAttack.Count > 0)
+        {
+            return true;
+        }
+        return false;
+    }
+    private bool isPieceAttacking(Vector2Int pos)
+    {
+        if (selectedPiece.listMove.Contains(pos))
+        {
+            return false;
+        }
+        return true;
+    }
+    private CheckersPiece FindEnemy(Vector2Int pos)
+    {
+        Vector2Int whichPattern = new Vector2Int(pos.x - selectedPiece.x, pos.y - selectedPiece.y) / 2;
+        Vector2Int enemyPos = new Vector2Int(selectedPiece.x + whichPattern.x, selectedPiece.y + whichPattern.y);
+        return listPiece[enemyPos.x, enemyPos.y];
+    }
+    private void AfterMove(Vector2Int pos)
+    {
+        Vector3 vector3Pos = new Vector3(pos.x, 0.5f, pos.y);
+        selectedPiece.SetPosition(vector3Pos, false);
+        listPiece[prevSelectedPiecePos.x, prevSelectedPiecePos.y] = null;
+        listPiece[pos.x, pos.y] = selectedPiece;
+        selectedPiece.x = pos.x;
+        selectedPiece.y = pos.y;
+    }
+    private void KillPiece(CheckersPiece piece, ref List<CheckersPiece> deadzone)
+    {
+        Vector2Int deadPos = new Vector2Int(1 + (deadzone.Count / 2), piece.team == Team.Cake ? -1 : 8);
+        Vector3 vector3DeadPos = new Vector3(deadPos.x, (deadStackoffset * ((deadzone.Count % 2) + 1)), deadPos.y);
+        deadzone.Add(piece);
+        piece.SetPosition(vector3DeadPos, false);
+        listPiece[piece.x, piece.y] = null;
+        piece.x = deadPos.x;
+        piece.y = deadPos.y;
+
+        if (piece.team == Team.Cake)
+        {
+            GameManager.instance.cakePieceCount--;
+        }
+        else if (piece.team == Team.Burger)
+        {
+            GameManager.instance.burgerPieceCount--;
+        }
+
+    }
+
+    private void ShowHighlight()
+    {
+        for (int i = 0; i < selectedPiece.listMove.Count; i++)
+        {
+            listCube[selectedPiece.listMove[i].x, selectedPiece.listMove[i].y].layer = ChangeLayer(selectedPiece.listMove[i]);
+        }
+
+        for (int i = 0; i < selectedPiece.listAttack.Count; i++)
+        {
+            listCube[selectedPiece.listAttack[i].x, selectedPiece.listAttack[i].y].layer = ChangeLayer(selectedPiece.listAttack[i]);
+        }
+    }
+
+    private void HideHighlight()
+    {
+        for (int i = 0; i < selectedPiece.listMove.Count; i++)
+        {
+            listCube[selectedPiece.listMove[i].x, selectedPiece.listMove[i].y].layer = LayerMask.NameToLayer("CubeLayer");
+        }
+
+        for (int i = 0; i < selectedPiece.listAttack.Count; i++)
+        {
+            listCube[selectedPiece.listAttack[i].x, selectedPiece.listAttack[i].y].layer = LayerMask.NameToLayer("CubeLayer");
+        }
+    }
+
+
+    private LayerMask ChangeLayer(Vector2Int pos)
+    {
+        if (pos == currentPointer)
+        {
+            return LayerMask.NameToLayer("HoverLayer");
+        }
+        else if (selectedPiece != null && selectedPiece.listMove.Count > 0 && selectedPiece.listMove.Contains(pos))
+        {
+            return LayerMask.NameToLayer("MoveLayer");
+        }
+        else if (selectedPiece != null && selectedPiece.listAttack.Count > 0 && selectedPiece.listAttack.Contains(pos))
+        {
+            return LayerMask.NameToLayer("AttackLayer");
+        }
+        return LayerMask.NameToLayer("CubeLayer");
+    }
+
+    private bool IsValidMove(Vector2Int pos)
+    {
+        if (currentPointer == noTarget || listPiece[pos.x, pos.y] != null || (!selectedPiece.listAttack.Contains(pos) && !selectedPiece.listMove.Contains(pos)))
         {
             return false;
         }
         return true;
     }
 
-    private void ResetPosition()
+    public void GetAllTogglablePiece()
     {
-        selectedPiece.SetPosition(prevSelectedPiecePos, false);
+        bool hasPieceCanAttack = false;
+        for (int i = 0; i < GameManager.instance.row; i++)
+        {
+            for (int j = 0; j < GameManager.instance.col; j++)
+            {
+                if (listPiece[i, j] != null && listPiece[i, j].team == GameManager.instance.whoTurn)
+                {
+                    listPiece[i, j].GetPossibleMoves(ref listPiece);
+                    if (listPiece[i, j].listMove.Count == 0 && listPiece[i, j].listAttack.Count == 0)
+                    {
+                        continue;
+                    }
+                    if (listPiece[i, j].listAttack.Count > 0)
+                    {
+                        if (!hasPieceCanAttack)
+                        {
+                            togglePiece.Clear();
+                            hasPieceCanAttack = true;
+                        }
+                        togglePiece.Add(listPiece[i, j]);
+                    }
+                    else if (listPiece[i, j].listMove.Count > 0 && !hasPieceCanAttack)
+                    {
+                        togglePiece.Add(listPiece[i, j]);
+                    }
+                }
+            }
+        }
+        ToggleAvailablePiece();
     }
+
+    private void ToggleAvailablePiece()
+    {
+        for (int i = 0; i < togglePiece.Count; i++)
+        {
+            togglePiece[i].ToggleIndicator();
+        }
+    }
+
 }

@@ -324,6 +324,11 @@ MonoBehaviour:
   col: 8
   cake: {fileID: 1370138657283354130, guid: e777ff9c1602d3347acc034061056eb3, type: 3}
   burger: {fileID: 8085371818264714053, guid: 2ac2573f9cdfcae4abe90ede65b45bcd, type: 3}
+  isGameOver: 0
+  winner: 0
+  whoTurn: 0
+  cakePieceCount: 0
+  burgerPieceCount: 0
 --- !u!4 &56413251
 Transform:
   m_ObjectHideFlags: 0

@@ -10,6 +10,7 @@ public enum UserAction
 
 public enum Team
 {
+    None,
     Cake,
     Burger
 }
@@ -25,8 +26,6 @@ public class GameManager : MonoBehaviour, ISubject
     public static GameManager instance { get; private set; }
     private List<IObserver> listObserver;
 
-    public bool isGameOver;
-    public Team winner;
 
     [Header("Checkers Board Settings")]
     public GameObject borderCube;
@@ -38,6 +37,13 @@ public class GameManager : MonoBehaviour, ISubject
     [Header("Checker Piece")]
     public GameObject cake;
     public GameObject burger;
+
+    [Header("Gameplay")]
+    public bool isGameOver;
+    public Team winner;
+    [SerializeField] public Team whoTurn;
+    [SerializeField] public int cakePieceCount;
+    [SerializeField] public int burgerPieceCount;
 
     public void AddObserver(IObserver observer)
     {
@@ -69,6 +75,7 @@ public class GameManager : MonoBehaviour, ISubject
         listObserver = new List<IObserver>();
         isGameOver = false;
         SceneManager.sceneLoaded += SceneLoadLogic;
+
     }
 
     private void SceneLoadLogic(Scene scene, LoadSceneMode mode)
@@ -93,6 +100,8 @@ public class GameManager : MonoBehaviour, ISubject
 
     private IEnumerator StartGame()
     {
+        whoTurn = Team.Cake;
+        winner = Team.None;
         BoardGenerator.GenerateBoard(row, col);
         yield return null;
     }

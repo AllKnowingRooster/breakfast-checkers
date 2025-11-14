@@ -91,15 +91,22 @@ public static class BoardGenerator
         Vector3 positionOnBoard = new Vector3(x, 0.5f, y);
         GameObject piecePrefab = team == Team.Cake ? GameManager.instance.cake : GameManager.instance.burger;
         Quaternion rotation = team == Team.Cake ? Quaternion.identity : Quaternion.identity;
-        CheckersPiece piece = GameObject.Instantiate(piecePrefab, positionOnBoard, rotation, parent).AddComponent<CheckersPiece>();
+        ManPiece piece = GameObject.Instantiate(piecePrefab, positionOnBoard, rotation, parent).AddComponent<ManPiece>();
         piece.transform.name = team == Team.Cake ? "Cake Piece" : "Burger Piece";
-        //piece.gameObject.layer = LayerMask.NameToLayer("Default");
         piece.x = x;
         piece.y = y;
         piece.team = team;
         piece.pieceType = PieceType.Men;
         piece.SetPosition(positionOnBoard, true);
         listPiece[x, y] = piece;
+        if (team == Team.Cake)
+        {
+            GameManager.instance.cakePieceCount++;
+        }
+        else if (team == Team.Burger)
+        {
+            GameManager.instance.burgerPieceCount++;
+        }
     }
 
     public static void GenerateBoard(int row, int col)
@@ -114,5 +121,6 @@ public static class BoardGenerator
         GenerateCube(row, col, ref checkersBoard.listCube, checkerCube.transform);
         GenerateBorder(row, "Border Cube", checkerBorder.transform);
         GenerateAllPiece(ref checkersBoard.listPiece, checkerPiece.transform);
+        checkersBoard.GetAllTogglablePiece();
     }
 }
