@@ -20,6 +20,9 @@ public class MainMenuCanvasManager : MonoBehaviour
     [Header("Settings Menu")]
     [SerializeField] private Animator settingsMenuAnimator;
     [SerializeField] private Button settingsReturn;
+    public AudioUI masterUI;
+    public AudioUI sfxUI;
+    public AudioUI musicUI;
     private UIState settingsMenuState;
 
     private void Awake()
@@ -40,6 +43,9 @@ public class MainMenuCanvasManager : MonoBehaviour
         exitButton.onClick.AddListener(() => { StartCoroutine(Exit()); });
         settingsReturn.onClick.RemoveAllListeners();
         settingsReturn.onClick.AddListener(() => { GoToStartMenu(); });
+        AudioManager.instance.InitializeAudioUI(masterUI, "Master");
+        AudioManager.instance.InitializeAudioUI(sfxUI, "SFX");
+        AudioManager.instance.InitializeAudioUI(musicUI, "Music");
     }
 
     private void Start()

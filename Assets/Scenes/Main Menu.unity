@@ -2536,18 +2536,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mixer: {fileID: 24100000, guid: 7918ddd11765926419d90d481f9e8639, type: 2}
-  masterUI:
-    text: {fileID: 2068007410}
-    slider: {fileID: 1584247596}
-    value: {fileID: 358341333}
-  sfxUI:
-    text: {fileID: 1073540829}
-    slider: {fileID: 382106026}
-    value: {fileID: 1908353221}
-  musicUI:
-    text: {fileID: 1897164189}
-    slider: {fileID: 14477097}
-    value: {fileID: 188845586}
   listSfx:
   - clip: {fileID: 8300000, guid: a97283737635231439aa0ce0a8774fe8, type: 3}
     volume: 3
@@ -3363,6 +3351,18 @@ MonoBehaviour:
   exitButton: {fileID: 1881276348}
   settingsMenuAnimator: {fileID: 992729388}
   settingsReturn: {fileID: 1757687279}
+  masterUI:
+    text: {fileID: 2068007410}
+    slider: {fileID: 1584247596}
+    value: {fileID: 358341333}
+  sfxUI:
+    text: {fileID: 1073540829}
+    slider: {fileID: 382106026}
+    value: {fileID: 1908353221}
+  musicUI:
+    text: {fileID: 1897164189}
+    slider: {fileID: 14477097}
+    value: {fileID: 188845586}
 --- !u!1 &1120895764
 GameObject:
   m_ObjectHideFlags: 0

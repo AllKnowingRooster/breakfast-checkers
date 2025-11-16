@@ -6,17 +6,15 @@ using UnityEngine.Audio;
 
 public class AudioManager : MonoBehaviour, IObserver
 {
-    public AudioManager instance { get; private set; }
+    public static AudioManager instance { get; private set; }
     [SerializeField] private AudioMixer mixer;
-    [SerializeField] private AudioUI masterUI;
-    [SerializeField] private AudioUI sfxUI;
-    [SerializeField] private AudioUI musicUI;
     [SerializeField] private List<AudioData> listSfx;
     [SerializeField] private List<AudioData> listBGM;
     [SerializeField] private Dictionary<UserAction, AudioData> sfxMap;
     [SerializeField] private AudioSource bgmSource;
     [SerializeField] private AudioSource sfxSource;
-
+    private float minDecibel = -80.0f;
+    private float maxDecibel = 0.0f;
     private void Awake()
     {
         if (instance != null)
@@ -33,9 +31,6 @@ public class AudioManager : MonoBehaviour, IObserver
             sfxMap.Add(listAction[i], listSfx[i]);
         }
         PlayBGM(0);
-        SetUI(masterUI, "Master");
-        SetUI(sfxUI, "SFX");
-        SetUI(musicUI, "Music");
     }
 
     private void OnEnable()
@@ -55,11 +50,13 @@ public class AudioManager : MonoBehaviour, IObserver
         bgmSource.Play();
     }
 
-    private void SetUI(AudioUI ui, string mixerParameter)
+    public void InitializeAudioUI(AudioUI ui, string mixerParameter)
     {
         ui.slider.onValueChanged.RemoveAllListeners();
         ui.slider.onValueChanged.AddListener((float value) => { UpdateSoundMixer(value, ui.value, mixerParameter); });
-        ui.slider.value = 0.5f;
+        float currentMixerValue;
+        mixer.GetFloat(mixerParameter, out currentMixerValue);
+        ui.slider.value = DecibelToFloat(currentMixerValue);
     }
 
     private void UpdateSoundMixer(float sliderValue, TextMeshProUGUI soundValue, string mixerParameter)
@@ -67,6 +64,11 @@ public class AudioManager : MonoBehaviour, IObserver
         float decibel = Mathf.Clamp(Mathf.Log10(sliderValue) * 20, -80.0f, 0.0f);
         mixer.SetFloat(mixerParameter, decibel);
         soundValue.text = (Mathf.Floor(sliderValue * 100.0f)).ToString() + "%";
+    }
+
+    private float DecibelToFloat(float value)
+    {
+        return (value - minDecibel) / (maxDecibel - minDecibel);
     }
 
     public void OnNotify(UserAction action)
