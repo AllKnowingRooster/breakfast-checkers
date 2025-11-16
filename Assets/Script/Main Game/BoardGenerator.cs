@@ -111,9 +111,12 @@ public static class BoardGenerator
         checkerPiece.transform.parent = checkersBoard.transform;
         checkerCube.transform.parent = checkersBoard.transform;
         checkerBorder.transform.parent = checkersBoard.transform;
+        checkersBoard.cinemachineCameras = GameObject.Find("Cameras").transform;
         GenerateCube(row, col, ref checkersBoard.listCube, checkerCube.transform);
         GenerateBorder(row, "Border Cube", checkerBorder.transform);
         GenerateAllPiece(ref checkersBoard.listPiece, checkerPiece.transform);
         checkersBoard.GetAllTogglablePiece();
+        checkersBoard.SwapCamera();
+
     }
 }

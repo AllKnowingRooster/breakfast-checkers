@@ -18,6 +18,7 @@ public class CheckersBoard : MonoBehaviour
     private float deadStackoffset;
     private List<CheckersPiece> togglePieces;
     private bool moveAgain = false;
+    public Transform cinemachineCameras;
     private void Awake()
     {
         cam = Camera.main;
@@ -103,6 +104,7 @@ public class CheckersBoard : MonoBehaviour
         ToggleAvailablePiece();
         togglePieces.Clear();
         GameManager.instance.whoTurn = GameManager.instance.whoTurn == Team.Burger ? Team.Cake : Team.Burger;
+        SwapCamera();
         GetAllTogglablePiece();
     }
     private void ResetPosition()
@@ -332,6 +334,28 @@ public class CheckersBoard : MonoBehaviour
         for (int i = 0; i < togglePieces.Count; i++)
         {
             togglePieces[i].ToggleIndicator();
+        }
+    }
+
+    public void SwapCamera()
+    {
+        DisableCameras();
+        if (GameManager.instance.whoTurn == Team.Cake)
+        {
+            cinemachineCameras.GetChild(1).gameObject.SetActive(true);
+        }
+        else
+        {
+            cinemachineCameras.GetChild(0).gameObject.SetActive(true);
+        }
+    }
+
+    private void DisableCameras()
+    {
+        Debug.Log(cinemachineCameras);
+        for (int i = 0; i < cinemachineCameras.childCount; i++)
+        {
+            cinemachineCameras.GetChild(i).gameObject.SetActive(false);
         }
     }
 

@@ -9,6 +9,7 @@ public class MainMenuCanvasManager : MonoBehaviour
 
     public static MainMenuCanvasManager instance { get; private set; }
     private UIState currentState;
+
     [Header("Start Menu")]
     [SerializeField] private Animator startMenuAnimator;
     [SerializeField] private Button singlePlayerButton;
