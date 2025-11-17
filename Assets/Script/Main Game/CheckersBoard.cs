@@ -145,6 +145,7 @@ public class CheckersBoard : MonoBehaviour
             KillPiece(enemyPiece, ref (enemyPiece.team == Team.Cake ? ref cakeDeadzone : ref burgerDeadzone));
             isAttacking = true;
         }
+        GameManager.instance.NotifyObserver(UserAction.Move);
         AfterMove(pos);
         if (selectedPiece.pieceType == PieceType.Men)
         {

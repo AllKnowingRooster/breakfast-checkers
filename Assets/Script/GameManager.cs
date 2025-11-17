@@ -5,7 +5,8 @@ using UnityEngine.SceneManagement;
 public enum UserAction
 {
     Hover,
-    Click
+    Click,
+    Move
 }
 
 public enum Team

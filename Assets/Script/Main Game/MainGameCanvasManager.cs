@@ -94,7 +94,7 @@ public class MainGameCanvasManager : MonoBehaviour
         roundText.gameObject.SetActive(true);
         while (time > 0.0f)
         {
-            roundText.text = string.Format("Round Start in {0}", Mathf.Floor(time).ToString());
+            roundText.text = string.Format("Round Start in {0}", Mathf.Ceil(time).ToString());
             time -= Time.deltaTime;
             yield return null;
         }

@@ -2543,6 +2543,9 @@ MonoBehaviour:
   - clip: {fileID: 8300000, guid: 80d9062b0ece4684982f02bf46b10ee7, type: 3}
     volume: 3
     cooldown: 0.5
+  - clip: {fileID: 8300000, guid: afeb6d4df899fe8428b55f45507ebbd3, type: 3}
+    volume: 3
+    cooldown: 0.5
   listBGM:
   - clip: {fileID: 8300000, guid: c5ec2a9592835f94f8ec4be15ffcd6f3, type: 3}
     volume: 2
