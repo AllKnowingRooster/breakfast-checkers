@@ -3,7 +3,7 @@ there is 2 Team,cake(white) and burger(black)
 team cake always move first
 
 How to start Game:
--Using Unity Play URL(https://play.unity.com/en/games/73c89e4a-231f-4c2c-a404-9ce0f4129f7d/breakfast-checkers)
+	-Using Unity Play URL(https://play.unity.com/en/games/73c89e4a-231f-4c2c-a404-9ce0f4129f7d/breakfast-checkers)
 -from /build and run BreakfastChecker.exe
 
 How to Play:
