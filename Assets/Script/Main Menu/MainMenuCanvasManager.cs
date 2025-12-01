@@ -1,5 +1,4 @@
 using System.Collections;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -68,7 +67,7 @@ public class MainMenuCanvasManager : MonoBehaviour
     private IEnumerator Exit()
     {
         yield return CanvasAnimator.WaitForAnimation(startMenuAnimator, "StartMenuExit", "Exit");
-        EditorApplication.isPlaying = false;
+        Application.Quit();
     }
     private void GoToStartMenu()
     {
